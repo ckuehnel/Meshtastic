@@ -3,6 +3,7 @@
 #include <Adafruit_SSD1306.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <ArduinoJson.h>
 
 // Pin-Konfiguration
 #define ONE_WIRE_BUS 0  // DS18B20 Datenleitung an Pin D0
@@ -20,6 +21,10 @@ void setup()
 {
   // Serieller Monitor
   Serial.begin(115200);
+  delay(2000);
+
+  Serial1.begin(115200);
+  Serial1.println("XIAO Sensor starts");
 
   // OLED initialisieren
   if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDR)) {
@@ -45,9 +50,19 @@ void loop()
   float temperatureC = sensors.getTempCByIndex(0);
 
   // Temperatur auf dem seriellen Monitor ausgeben
-  Serial.print(F("Temperatur: "));
-  Serial.print(temperatureC);
-  Serial.println(F(" °C"));
+  //Serial.print(F("Temperatur: "));
+  //Serial.print(temperatureC);
+  //Serial.println(F(" °C"));
+
+  // JSON-Dokument erstellen
+  JsonDocument jsonDoc;
+  jsonDoc["temperature_ds18b20"] = temperatureC;
+
+  // JSON-Dokument in String umwandeln und seriell ausgeben
+  String jsonString;
+  serializeJson(jsonDoc, jsonString);
+  Serial.println(jsonString);
+  Serial1.println(jsonString);
 
   // OLED aktualisieren
   display.clearDisplay();
@@ -60,7 +75,6 @@ void loop()
   display.print(F(" C"));
   display.display();
 
-  // Kurze Pause
-  delay(1000);
+  delay(5000); // 5 Sekunden warten
 }
 
